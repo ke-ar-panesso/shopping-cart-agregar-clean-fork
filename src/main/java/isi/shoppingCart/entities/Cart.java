@@ -30,6 +30,20 @@ public class Cart {
         items.add(new CartItem(product, 1));
     }
 
+    public int getQuantityByProductId(int productId) {
+        int i;
+
+        for (i = 0; i < items.size(); i++) {
+            CartItem item = items.get(i);
+
+            if (item.getProduct().getId() == productId) {
+                return item.getQuantity();
+            }
+        }
+
+        return 0;
+    }
+
     public double getTotal() {
         double total = 0.0;
         int i;

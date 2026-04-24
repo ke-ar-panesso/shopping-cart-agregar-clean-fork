@@ -2,6 +2,7 @@ package isi.shoppingCart.adapters.ui;
 
 import isi.shoppingCart.entities.CartItem;
 import isi.shoppingCart.entities.Product;
+import isi.shoppingCart.usecases.dto.OperationResult;
 import isi.shoppingCart.usecases.services.ShoppingCartApp;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -88,17 +89,23 @@ public class MainView {
 
             Label nameLabel = new Label(product.getName());
             Label priceLabel = new Label("$ " + product.getPrice());
+            Label availableLabel = new Label("Disponible: " + product.getAvailableQuantity());
             Button addButton = new Button("Agregar");
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
             addButton.setOnAction(event -> {
-                shoppingCartApp.addProductToCart(product.getId());
+                OperationResult result = shoppingCartApp.addProductToCart(product.getId());
+
+                if (!result.isSuccess()) {
+                    showMessage(result.getMessage());
+                }
+
                 refreshCart();
             });
 
-            row.getChildren().addAll(nameLabel, priceLabel, spacer, addButton);
+            row.getChildren().addAll(nameLabel, priceLabel, availableLabel, spacer, addButton);
             row.setStyle("-fx-padding: 5; -fx-border-color: #DDDDDD;");
 
             catalogBox.getChildren().add(row);

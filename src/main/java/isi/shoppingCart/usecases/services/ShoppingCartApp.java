@@ -5,6 +5,7 @@ import isi.shoppingCart.entities.CartItem;
 import isi.shoppingCart.entities.Product;
 import isi.shoppingCart.infrastructure.repositories.InMemoryCartRepository;
 import isi.shoppingCart.infrastructure.repositories.InMemoryProductRepository;
+import isi.shoppingCart.usecases.dto.OperationResult;
 import isi.shoppingCart.usecases.ports.CartRepository;
 import isi.shoppingCart.usecases.ports.ProductRepository;
 import java.util.List;
@@ -19,7 +20,7 @@ public class ShoppingCartApp {
         cartRepository = new InMemoryCartRepository();
         agregarProductoAlCarritoUseCase = new AgregarProductoAlCarritoUseCase(productRepository, cartRepository);
 
-        initializeData();
+        cargarDatosIniciales();
     }
 
     public ShoppingCartApp(ProductRepository productRepository,
@@ -30,21 +31,21 @@ public class ShoppingCartApp {
         this.agregarProductoAlCarritoUseCase = agregarProductoAlCarritoUseCase;
     }
 
-    private void initializeData() {
-        loadCatalog();
-        loadCart();
+    private void cargarDatosIniciales() {
+        cargarCatalogoInicial();
+        cargarCarritoInicial();
     }
 
-    private void loadCatalog() {
-        productRepository.save(new Product(1, "Laptop", 2500.0));
-        productRepository.save(new Product(2, "Mouse", 80.0));
-        productRepository.save(new Product(3, "Teclado", 150.0));
-        productRepository.save(new Product(4, "Monitor", 900.0));
-        productRepository.save(new Product(5, "Audifonos", 200.0));
-        productRepository.save(new Product(6, "Webcam", 180.0));
+    private void cargarCatalogoInicial() {
+        productRepository.save(new Product(1, "Laptop", 2500.0, 3));
+        productRepository.save(new Product(2, "Mouse", 80.0, 2));
+        productRepository.save(new Product(3, "Teclado", 150.0, 5));
+        productRepository.save(new Product(4, "Monitor", 900.0, 1));
+        productRepository.save(new Product(5, "Audifonos", 200.0, 4));
+        productRepository.save(new Product(6, "Webcam", 180.0, 2));
     }
 
-    private void loadCart() {
+    private void cargarCarritoInicial() {
         Cart cart = new Cart();
 
         Product product1 = productRepository.findById(1);
@@ -81,7 +82,7 @@ public class ShoppingCartApp {
         return cart.getTotal();
     }
 
-    public void addProductToCart(int productId) {
-        agregarProductoAlCarritoUseCase.execute(productId);
+    public OperationResult addProductToCart(int productId) {
+        return agregarProductoAlCarritoUseCase.execute(productId);
     }
 }

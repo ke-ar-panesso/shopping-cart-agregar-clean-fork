@@ -1,5 +1,6 @@
 package isi.shoppingCart.usecases.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import isi.shoppingCart.entities.Cart;
@@ -41,8 +42,14 @@ public class ConfirmarCompraUseCase {
             }
         }
 
+        //Crear copia de los items del carrito para la compra (antes de descontar inventario)
+        List<CartItem> purchaseItems = new ArrayList<>();
+        for (CartItem item : itemsInCart) {
+            purchaseItems.add(new CartItem(item.getProduct(), item.getQuantity()));
+        }
+
         //Generar persistencia de la compra
-        Purchase newPurchase = new Purchase(numCompra, itemsInCart);
+        Purchase newPurchase = new Purchase(numCompra, purchaseItems);
         purchaseRepository.recordPurchase(newPurchase);
         numCompra++;
         
@@ -55,6 +62,9 @@ public class ConfirmarCompraUseCase {
                 i++;
             } while (i < item.getQuantity());
         }
+
+        //Limpiar carrito
+        currentCart.clear();
 
         return "Compra realizada exitosamente";
     }

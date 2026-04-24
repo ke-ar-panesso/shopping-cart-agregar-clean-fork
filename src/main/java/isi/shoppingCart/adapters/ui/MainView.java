@@ -4,6 +4,7 @@ import java.util.List;
 
 import isi.shoppingCart.entities.CartItem;
 import isi.shoppingCart.entities.Product;
+import isi.shoppingCart.entities.Purchase;
 import isi.shoppingCart.infrastructure.repositories.InMemoryCartRepository;
 import isi.shoppingCart.infrastructure.repositories.InMemoryProductRepository;
 import isi.shoppingCart.infrastructure.repositories.InMemoryPurchaseRepository;
@@ -29,6 +30,7 @@ public class MainView {
 
     private VBox catalogBox;
     private VBox cartBox;
+    private VBox purchaseHistoryBox;
     private Label totalLabel;
 
     public MainView() {
@@ -49,27 +51,31 @@ public class MainView {
 
         catalogBox = new VBox(10);
         cartBox = new VBox(10);
+        purchaseHistoryBox = new VBox(10);
         totalLabel = new Label("Total: $ 0.0");
     }
 
     public Scene createScene() {
         VBox catalogPanel = createCatalogPanel();
         VBox cartPanel = createCartPanel();
+        VBox historyPanel = createPurchaseHistoryPanel();
 
         HBox content = new HBox(20);
         content.setPadding(new Insets(15));
-        content.getChildren().addAll(catalogPanel, cartPanel);
+        content.getChildren().addAll(catalogPanel, cartPanel, historyPanel);
 
         HBox.setHgrow(catalogPanel, Priority.ALWAYS);
         HBox.setHgrow(cartPanel, Priority.ALWAYS);
+        HBox.setHgrow(historyPanel, Priority.ALWAYS);
 
         refreshCatalog();
         refreshCart();
+        refreshPurchaseHistory();
 
         BorderPane root = new BorderPane();
         root.setCenter(content);
 
-        return new Scene(root, 900, 450);
+        return new Scene(root, 1350, 450);
     }
 
     private VBox createCatalogPanel() {
@@ -98,11 +104,23 @@ public class MainView {
 
                 refreshCatalog();
                 refreshCart();
+                refreshPurchaseHistory();
             }
         );
 
         VBox panel = new VBox(10);
         panel.getChildren().addAll(title, cartBox, totalLabel, confirmButton);
+        panel.setPrefWidth(430);
+        panel.setStyle("-fx-border-color: lightgray; -fx-padding: 10;");
+        return panel;
+    }
+
+    private VBox createPurchaseHistoryPanel() {
+        Label title = new Label("Historial de Compras");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        VBox panel = new VBox(10);
+        panel.getChildren().addAll(title, purchaseHistoryBox);
         panel.setPrefWidth(430);
         panel.setStyle("-fx-border-color: lightgray; -fx-padding: 10;");
         return panel;
@@ -165,6 +183,47 @@ public class MainView {
         }
 
         totalLabel.setText("Total: $ " + shoppingCartApp.getCartTotal());
+    }
+
+    private void refreshPurchaseHistory() {
+        purchaseHistoryBox.getChildren().clear();
+
+        List<Purchase> purchases = shoppingCartApp.getPurchasesRecord();
+
+        if (purchases.isEmpty()) {
+            Label emptyLabel = new Label("No hay compras realizadas");
+            emptyLabel.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
+            purchaseHistoryBox.getChildren().add(emptyLabel);
+            return;
+        }
+
+        for (Purchase purchase : purchases) {
+            HBox row = new HBox(10);
+
+            Label idLabel = new Label("Compra #" + purchase.getId());
+            idLabel.setPrefWidth(100);
+
+            double total = 0.0;
+            for (CartItem item : purchase.getItems()) {
+                total += item.getSubtotal();
+            }
+
+            Label totalLabel = new Label("Total: $" + total);
+            totalLabel.setPrefWidth(120);
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            Button detailsButton = new Button("Ver detalles");
+            detailsButton.setOnAction(event -> {
+                PurchaseDetailsDialog.show(purchase);
+            });
+
+            row.getChildren().addAll(idLabel, totalLabel, spacer, detailsButton);
+            row.setStyle("-fx-padding: 5; -fx-border-color: #DDDDDD; -fx-background-color: #F5F5F5;");
+
+            purchaseHistoryBox.getChildren().add(row);
+        }
     }
 
     private void showMessage(String message) {
